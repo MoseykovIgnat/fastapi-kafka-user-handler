@@ -12,6 +12,7 @@ class KafkaSettings(BaseSettings):
 
     @property
     def instance(self) -> str:
+        logger.info(f"Kafka instance: {self.host}:{self.port}")
         return f"{self.host}:{self.port}"
 
     model_config = SettingsConfigDict(

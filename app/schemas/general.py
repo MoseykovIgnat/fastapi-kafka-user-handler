@@ -7,7 +7,7 @@ class ResponseStatuses:
     ok: str = "ok"
     posted: str = "posted"
     success: str = "success"
-    invalid_XML: str = "invalid XML"
+    invalid_xml: str = "invalid XML"
     FAILED: str = "FAILED"
     SUCCESS: str = "SUCCESS"
 

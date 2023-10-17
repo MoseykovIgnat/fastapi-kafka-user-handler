@@ -10,7 +10,6 @@ class AppSettings(BaseSettings):
     DATABASE_URL: str = (
         "postgresql+asyncpg://postgres:postgres@localhost:5432/user_service"
     )
-    app_name: str = "Awesome API"
 
     model_config = SettingsConfigDict(env_file=".env")
 

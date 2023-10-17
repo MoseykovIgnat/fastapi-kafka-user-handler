@@ -84,7 +84,11 @@ async def get_users(
         async_session=async_session,
         pagination_and_filters_params=pagination_and_filters_params,
     )
-    return {"status": ResponseStatuses.success, "length": len(users_info), "users": users_info}
+    return {
+        "status": ResponseStatuses.success,
+        "length": len(users_info),
+        "users": users_info,
+    }
 
 
 @router.patch(

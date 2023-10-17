@@ -5,7 +5,7 @@ from starlette import status
 
 from app.endpoints.settings import EndpointsTags
 from app.kafka_workers.producer import kafka_producer
-from app.schemas.general import ResponseStatuses, ConsumerTopics
+from app.schemas.general import ConsumerTopics, ResponseStatuses
 
 router = APIRouter(
     prefix="/kafka_checker",
@@ -18,12 +18,19 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     summary="Create new user",
 )
-async def kafka_produce(topic_name: ConsumerTopics, user=Body(..., media_type="application/xml", openapi_examples={"valid_example":
-       {
-           "summary": "valid_example",
-           "value": "<project><foo>1</foo><bar>2</bar></project>",
-   }
-})):
+async def kafka_produce(
+    topic_name: ConsumerTopics,
+    user=Body(
+        ...,
+        media_type="application/xml",
+        # openapi_examples={ # NOQA DISPLAYS INCORRECT. TODO LEARN IT IN FUTURE
+        #     "valid_example": {  # noqa
+        #         "summary": "valid_example",  # noqa
+        #         "value": "<project><foo>1</foo><bar>2</bar></project>",  # noqa
+        #     },
+        # },
+    ),
+):
     try:
         await kafka_producer.producer_client.send(
             topic=topic_name,
@@ -31,4 +38,4 @@ async def kafka_produce(topic_name: ConsumerTopics, user=Body(..., media_type="a
         )
         return {"status": ResponseStatuses.posted}
     except JSONDecodeError:
-        return {"status": ResponseStatuses.invalid_XML}
+        return {"status": ResponseStatuses.invalid_xml}
