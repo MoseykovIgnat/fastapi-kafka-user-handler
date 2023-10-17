@@ -1,6 +1,22 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
-from app.core.settings import async_session
+
+from app.core.app_settings import get_app_settings
+
+settings = get_app_settings()
+engine = create_async_engine(
+    f"{settings.DATABASE_URL}_pytest" if settings.TESTING else settings.DATABASE_URL,
+    future=True,
+    pool_pre_ping=True,
+)
+
+
+async_session = sessionmaker(  # noqa
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+)
 
 
 async def get_async_session() -> AsyncSession:

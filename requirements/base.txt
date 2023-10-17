@@ -13,3 +13,6 @@ loguru==0.7.2
 asyncpg==0.28.0
 alembic-1.12.0
 sqlalchemy==2.0.22
+
+pytest==7.4.2
+sqlalchemy_utils==0.41.1

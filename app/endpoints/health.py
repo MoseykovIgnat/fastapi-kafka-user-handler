@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.endpoints.settings import EndpointsTags
+from app.schemas.general import ResponseStatuses
 
 router = APIRouter(prefix="/healthz", tags=[EndpointsTags.SERVICE_ENDPOINT_TAG])
 
@@ -12,4 +13,4 @@ router = APIRouter(prefix="/healthz", tags=[EndpointsTags.SERVICE_ENDPOINT_TAG])
     response_model=dict,
 )
 def health() -> dict:
-    return {"status": "OK"}
+    return {"status": ResponseStatuses.ok}

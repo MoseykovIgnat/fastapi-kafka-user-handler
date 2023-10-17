@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies.db import PaginationAndFiltersParams
 from app.models.user import User as UserModel
-from app.schemas.user import User as UserSchema
+from app.schemas.user import User as UserSchema, UserWithoutValidation
 
 
 class UsersCRUD:
@@ -81,14 +81,14 @@ class UsersCRUD:
     @staticmethod
     async def update_user(
         async_session: AsyncSession,
-        new_user_data: UserModel,
+        new_user_data: UserWithoutValidation,
         current_user: UserModel,
         user_id: int,
     ) -> UserModel:
         await async_session.execute(
             update(UserModel)
             .filter(UserModel.user_id == user_id)
-            .values(**new_user_data.model_dump()),
+            .values(**new_user_data.model_dump(exclude_none=True)),
         )
         await async_session.commit()
         await async_session.refresh(current_user)

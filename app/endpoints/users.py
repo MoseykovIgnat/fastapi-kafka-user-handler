@@ -6,13 +6,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud.users import UsersCRUD
 from app.dependencies.db import get_async_session, PaginationAndFiltersParams
 from app.endpoints.settings import EndpointsTags
+from app.schemas.general import ResponseStatuses
 from app.schemas.user import (
     User as UserSchema,
     UserResponse,
     UsersGetResponse,
+    UserWithoutValidation,
 )
 
-router = APIRouter(prefix="/users", tags=[EndpointsTags.SERVICE_ENDPOINT_TAG])
+router = APIRouter(prefix="/users", tags=[EndpointsTags.USER_ENDPOINTS])
 
 
 @router.post(
@@ -35,7 +37,7 @@ async def create_user_instance(
         )
 
     return {
-        "status": "success",
+        "status": ResponseStatuses.success,
         "user": await UsersCRUD.create_user(
             async_session=async_session,
             user_info=user_info,
@@ -62,7 +64,7 @@ async def get_user_by_id(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"There is no user with id {user_id}",
         )
-    return {"status": "success", "user": user}
+    return {"status": ResponseStatuses.success, "user": user}
 
 
 @router.get(
@@ -82,7 +84,7 @@ async def get_users(
         async_session=async_session,
         pagination_and_filters_params=pagination_and_filters_params,
     )
-    return {"status": "success", "length": len(users_info), "users": users_info}
+    return {"status": ResponseStatuses.success, "length": len(users_info), "users": users_info}
 
 
 @router.patch(
@@ -93,7 +95,7 @@ async def get_users(
 )
 async def update_user_by_id(
     user_id: int,
-    new_user_data: UserSchema,
+    new_user_data: UserWithoutValidation,
     async_session: Annotated[AsyncSession, Depends(get_async_session)],
 ):
     if not (
@@ -105,8 +107,16 @@ async def update_user_by_id(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"There is no user with id {user_id}",
         )
+    if await UsersCRUD.get_user_by_email(
+        async_session=async_session,
+        email=new_user_data.email,
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Email {new_user_data.email} already exists.",
+        )
     return {
-        "status": "success",
+        "status": ResponseStatuses.success,
         "user": await UsersCRUD.update_user(
             async_session=async_session,
             new_user_data=new_user_data,
@@ -136,6 +146,6 @@ async def delete_user_by_id(
             detail=f"There is no user with id {user_id}",
         )
     return {
-        "status": "success",
+        "status": ResponseStatuses.success,
         "user": await UsersCRUD.delete_user(async_session=async_session, user=user),
     }
