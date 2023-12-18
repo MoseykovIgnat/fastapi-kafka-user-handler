@@ -1,0 +1,53 @@
+version: '2.6'
+services:
+  zookeeper:
+      image: bitnami/zookeeper:latest
+      ports:
+          - 2181:2181
+      environment:
+          - ALLOW_ANONYMOUS_LOGIN=yes
+
+  kafka:
+    image: bitnami/kafka:latest
+    ports:
+        - 9092:9092
+        - 9093:9093
+    environment:
+        - KAFKA_BROKER_ID=1
+        - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+        - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
+        - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+        - ALLOW_PLAINTEXT_LISTENER=yes
+        - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT
+        - KAFKA_CFG_LISTENERS=CLIENT://:9092
+        - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092
+        - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+
+  fastapi_kafka_user:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    restart: always
+    ports:
+      - 8000:8000
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/user_service
+      - KAFKA_PORT=9092
+      - KAFKA_HOST=kafka
+    depends_on:
+      - db
+      - kafka
+      - zookeeper
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=user_service

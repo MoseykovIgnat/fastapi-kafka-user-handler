@@ -1,0 +1,34 @@
+FROM python:3.11-slim
+
+
+WORKDIR app
+
+COPY requirements/base.txt requirements/base.txt
+
+
+RUN apt-get update -y &&  \
+    apt-get upgrade -y &&  \
+    apt-get -y --no-install-recommends install \
+    kafkacat &&  \
+    pip config set global.trusted-host "pypi.python.org pypi.org files.pythonhosted.org" && \
+    pip install --no-cache-dir -r requirements/base.txt && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get purge -y --allow-remove-essential apt && \
+    true && \
+    useradd -u 8877 baymax && \
+    chown -R baymax /app && \
+    chmod -R 777 /app
+
+USER 8877
+
+
+COPY ./app /app/app
+COPY ./scripts /app/scripts
+COPY ./migration /app/migration
+COPY .env alembic.ini /app/
+
+# run entrypoint.sh
+# ENTRYPOINT ["sh", "scripts/entrypoint.sh"]
+
